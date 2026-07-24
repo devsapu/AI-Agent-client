@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PFEC Global — AI Calling Solution</title>
+<style>
+  :root{
+    --navy:#12283C; --dark:#1A2430; --muted:#5B6B79; --border:#DCE4E9; --border2:#9AA7B0;
+    --teal:#0E7C7B; --teal-dark:#0B5C5B; --teal-light:#E4F3F2; --bg:#F7F9FB; --card:#FFFFFF;
+    --amber:#F2A65A; --amber-dark:#B8790A; --green:#2E7D53; --red:#B3432E;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;background:var(--bg);color:var(--dark);font-family:Calibri,Arial,sans-serif;line-height:1.55;}
+  h1,h2,h3{font-family:Cambria,Georgia,serif;color:var(--dark);margin:0;}
+  a{color:inherit;}
+  .container{max-width:1180px;margin:0 auto;padding:0 28px;}
+
+  /* progress bar */
+  #progress{position:fixed;top:0;left:0;height:3px;background:var(--teal);z-index:200;width:0%;transition:width .1s linear;}
+
+  /* nav */
+  nav{position:sticky;top:0;z-index:100;background:rgba(247,249,251,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);}
+  nav .container{display:flex;align-items:center;justify-content:space-between;height:64px;}
+  .brand{font-family:Cambria,Georgia,serif;font-weight:700;font-size:16px;white-space:nowrap;}
+  .brand span{color:var(--teal);}
+  .navlinks{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;}
+  .navlinks a{font-size:12.5px;font-weight:700;color:var(--muted);text-decoration:none;padding:8px 12px;border-radius:20px;transition:all .15s;}
+  .navlinks a:hover{background:var(--teal-light);color:var(--teal-dark);}
+
+  /* hero */
+  .hero{padding:74px 0 60px;background:var(--navy);color:#fff;}
+  .hero .eyebrow{color:#9FD3E8;font-size:12.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;}
+  .hero h1{color:#fff;font-size:40px;margin:12px 0 16px;max-width:760px;}
+  .hero p{color:#B9CBD8;font-size:15.5px;max-width:660px;margin:0 0 30px;}
+  .hero-badges{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:32px;}
+  .badge{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:7px 16px;font-size:12.5px;color:#DCE9F0;}
+  .cta-row{display:flex;gap:14px;flex-wrap:wrap;}
+  .btn{display:inline-block;padding:13px 24px;border-radius:9px;font-size:14px;font-weight:700;text-decoration:none;cursor:pointer;border:none;}
+  .btn-primary{background:#F45B4C;color:#fff;}
+  .btn-primary:hover{background:#D94236;}
+  .btn-outline{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.4);}
+  .btn-outline:hover{border-color:#fff;}
+  .btn-teal{background:var(--teal);color:#fff;}
+  .btn-teal:hover{background:var(--teal-dark);}
+
+  /* sections */
+  section{padding:76px 0;}
+  .eyebrow-lt{color:var(--teal);font-size:12.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;}
+  .sec-title{font-size:30px;margin:10px 0 14px;}
+  .sec-sub{color:var(--muted);font-size:14.5px;max-width:720px;margin:0 0 40px;}
+
+  .reveal{opacity:0;transform:translateY(22px);transition:opacity .6s ease, transform .6s ease;}
+  .reveal.in{opacity:1;transform:translateY(0);}
+
+  /* overview cards */
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  @media (max-width:900px){.grid3{grid-template-columns:1fr;}}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:26px;transition:transform .2s ease, box-shadow .2s ease;}
+  .card:hover{transform:translateY(-4px);box-shadow:0 10px 26px rgba(18,40,60,.08);}
+  .card h3{font-size:17px;margin-bottom:8px;}
+  .card p{font-size:13.5px;color:var(--muted);margin:0;}
+
+  /* architecture */
+  .stack-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:36px;}
+  @media (max-width:900px){.stack-row{grid-template-columns:repeat(2,1fr);}}
+  .stack-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;text-align:center;}
+  .stack-card .num{width:30px;height:30px;border-radius:50%;background:var(--teal);color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;}
+  .stack-card h4{font-size:13.5px;margin:0 0 4px;}
+  .stack-card p{font-size:11.5px;color:var(--muted);margin:0;}
+  .diagram-figure{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:18px;}
+  .diagram-figure img{width:100%;display:block;border-radius:6px;}
+  .diagram-figure figcaption{font-size:12px;color:var(--muted);text-align:center;margin-top:10px;}
+
+  /* vendor grid */
+  .vgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  @media (max-width:1000px){.vgrid{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:640px){.vgrid{grid-template-columns:1fr;}}
+  .vcard{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:transform .2s ease, box-shadow .2s ease;}
+  .vcard:hover{transform:translateY(-4px);box-shadow:0 10px 26px rgba(18,40,60,.08);}
+  .vcard img{width:100%;display:block;border-bottom:1px solid var(--border);}
+  .vcard .body{padding:18px 20px 20px;}
+  .vcard h4{font-size:16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;}
+  .fit-badge{font-size:9.5px;font-weight:800;letter-spacing:.4px;padding:3px 9px;border-radius:12px;white-space:nowrap;}
+  .fit-best{background:var(--teal-light);color:var(--teal-dark);}
+  .fit-alt{background:#EAF1FB;color:#2C4C82;}
+  .fit-risk{background:#FBF3DF;color:var(--amber-dark);}
+  .fit-cost{background:var(--teal-light);color:var(--teal-dark);}
+  .fit-fallback{background:#F1EAFB;color:#5B2C82;}
+  .fit-phase3{background:#F3F6F8;color:var(--muted);}
+  .vcard ul{margin:0;padding-left:18px;font-size:12px;color:var(--muted);}
+  .vcard li{margin-bottom:5px;}
+
+  /* runbook */
+  .rgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  @media (max-width:900px){.rgrid{grid-template-columns:1fr;}}
+  .rcard{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;}
+  .rcard .circ{width:34px;height:34px;border-radius:50%;background:var(--teal);color:#fff;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;}
+  .rcard h4{font-size:14.5px;margin-bottom:6px;}
+  .rcard p{font-size:12px;color:var(--muted);margin:0;}
+
+  /* demo + tech doc callouts */
+  .callout{display:grid;grid-template-columns:1.1fr 1fr;gap:32px;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:40px;}
+  @media (max-width:860px){.callout{grid-template-columns:1fr;}}
+  .callout h3{font-size:22px;margin-bottom:12px;}
+  .callout p{font-size:14px;color:var(--muted);margin-bottom:20px;}
+  .mock-frame{background:var(--navy);border-radius:12px;padding:14px;}
+  .mock-frame .dots{display:flex;gap:6px;margin-bottom:10px;}
+  .mock-frame .dots span{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.25);}
+  .mock-inner{background:var(--bg);border-radius:8px;padding:16px;}
+  .mock-row{display:flex;gap:8px;margin-bottom:8px;}
+  .mock-pill{height:8px;background:var(--border);border-radius:4px;}
+  .mock-stage{display:flex;gap:5px;margin:12px 0;}
+  .mock-stage div{flex:1;height:20px;border-radius:4px;background:var(--teal-light);}
+  .mock-stage div.on{background:var(--teal);}
+
+  /* roadmap/cost */
+  .rm-row{display:flex;gap:14px;overflow-x:auto;padding-bottom:10px;margin-bottom:36px;}
+  .rm-week{flex:0 0 170px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;}
+  .rm-week .wk{font-size:10.5px;font-weight:800;color:var(--teal);letter-spacing:.5px;}
+  .rm-week h5{font-size:12.5px;margin:6px 0 4px;}
+  .rm-week p{font-size:11px;color:var(--muted);margin:0;}
+  .cost-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  @media (max-width:800px){.cost-grid{grid-template-columns:1fr;}}
+  .cost-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;}
+  .cost-card .big{font-size:26px;font-weight:800;color:var(--teal-dark);}
+  .cost-card .lbl{font-size:12px;color:var(--muted);margin-bottom:4px;}
+
+  /* next steps */
+  .steps-list{counter-reset:step;}
+  .step-item{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--border);}
+  .step-item:last-child{border-bottom:none;}
+  .step-num{counter-increment:step;flex:0 0 32px;height:32px;border-radius:50%;background:var(--teal-light);color:var(--teal-dark);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;}
+  .step-num::before{content:counter(step);}
+  .step-text{font-size:14px;padding-top:4px;}
+
+  footer{background:var(--navy);color:#9FB3C2;padding:32px 0;font-size:12.5px;text-align:center;}
+  footer a{color:#CFE3EA;text-decoration:none;}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+
+<nav>
+  <div class="container">
+    <div class="brand">PFEC Global <span>·</span> AI Calling Solution</div>
+    <div class="navlinks">
+      <a href="#overview">Overview</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#vendors">Vendors</a>
+      <a href="#runbook">Runbook</a>
+      <a href="#demo">Demo</a>
+      <a href="#techdocs">Tech Docs</a>
+      <a href="#roadmap">Roadmap &amp; Cost</a>
+    </div>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="container">
+    <div class="eyebrow">Technology Consulting Proposal &amp; Feasibility Study</div>
+    <h1>A vendor-agnostic AI calling solution, built on Zoho CRM — not a wrapper around one vendor's stack.</h1>
+    <p>Bangla + English voice AI, direct Zoho CRM integration with no Zapier anywhere, and a composable architecture validated before any production spend. Prepared for PFEC Global — Offshore (India / Sri Lanka / Bangladesh) &amp; Onshore (Australia).</p>
+    <div class="hero-badges">
+      <div class="badge">6 platforms evaluated</div>
+      <div class="badge">11-stage Zoho CRM lifecycle</div>
+      <div class="badge">$20K–$36K · Phase 1+2 build</div>
+      <div class="badge">200–300 lead pilot, ~1 week</div>
+    </div>
+    <div class="cta-row">
+      <a href="demo-site/index.html" target="_blank" class="btn btn-primary">Launch Interactive Demo →</a>
+      <a href="technical-implementation-guide.html" class="btn btn-outline">Technical Implementation Guide</a>
+      <a href="proposal/PFEC_AI_Calling_Proposal.pptx" class="btn btn-outline">Download Full Deck</a>
+    </div>
+  </div>
+</div>
+
+<section id="overview">
+  <div class="container">
+    <div class="eyebrow-lt reveal">01 — the brief</div>
+    <h2 class="sec-title reveal">One integrated problem, two source documents</h2>
+    <p class="sec-sub reveal">PFEC's Vendor Requirements brief specifies the voice/telephony contract; the BRD specifies the Zoho CRM data model and business rules. Taken together, this isn't "buy a calling bot" — it's a CRM-orchestrated conversation platform with a hard compliance rule (no Zapier) and a hard quality bar (Bangla).</p>
+    <div class="grid3">
+      <div class="card reveal">
+        <h3>Bangla quality</h3>
+        <p>Most global platforms treat Bengali as an afterthought; Indic specialists nail the accent but aren't built for enterprise CRM orchestration. This is PFEC's own pilot go/no-go gate.</p>
+      </div>
+      <div class="card reveal">
+        <h3>Zoho, not Zapier</h3>
+        <p>The BRD explicitly bans iPaaS in production. That write-back logic has to be owned and built by a custom middleware, not bought as a plug-in.</p>
+      </div>
+      <div class="card reveal">
+        <h3>Two regions, two journeys</h3>
+        <p>Offshore batch/real-time calling and Onshore Education vs. Migration flows need different scripts, driven by live Zoho CRM context.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="architecture" style="background:var(--card);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="container">
+    <div class="eyebrow-lt reveal">02 — architecture</div>
+    <h2 class="sec-title reveal">A composable, best-of-breed stack — not one monolith</h2>
+    <p class="sec-sub reveal">Each layer is independently swappable, because the two hardest requirements — authentic Bangla speech and a Zapier-free Zoho contract — are best solved by different specialists.</p>
+    <div class="stack-row reveal">
+      <div class="stack-card"><div class="num">1</div><h4>Zoho CRM</h4><p>Lead intake, 11-stage model, downstream automation</p></div>
+      <div class="stack-card"><div class="num">2</div><h4>Custom Middleware</h4><p>Zoho contract, retry scheduler, knowledge base</p></div>
+      <div class="stack-card"><div class="num">3</div><h4>Voice Orchestration</h4><p>Vapi or Retell AI — BYO-SIP, fn-calling</p></div>
+      <div class="stack-card"><div class="num">4</div><h4>Speech + Language</h4><p>Azure bn-BD / Sarvam + GPT-4o</p></div>
+    </div>
+    <figure class="diagram-figure reveal">
+      <img src="diagrams/flow-steps-1-3.png" alt="Call flow steps 1 to 3" />
+      <figcaption>Steps 1–3: lead becomes eligible in Zoho CRM through to the middleware triggering the call</figcaption>
+    </figure>
+    <figure class="diagram-figure reveal">
+      <img src="diagrams/flow-steps-4-6.png" alt="Call flow steps 4 to 6" />
+      <figcaption>Steps 4–6: the AI call itself through to the Zoho CRM stage write-back</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="vendors">
+  <div class="container">
+    <div class="eyebrow-lt reveal">03 — feasibility study</div>
+    <h2 class="sec-title reveal">Six platforms evaluated against PFEC's must-haves</h2>
+    <p class="sec-sub reveal">Each card shows the actual stack shape for that option — composable boxes that plug together, or one closed/bundled box.</p>
+    <div class="vgrid">
+      <div class="vcard reveal">
+        <img src="diagrams/arch-vapi.png" alt="Vapi architecture" />
+        <div class="body"><h4>Vapi <span class="fit-badge fit-best">BEST FIT</span></h4>
+        <ul>
+          <li>$0.05/min platform fee + pass-through (all-in ~$0.13–$0.31/min)</li>
+          <li>Usage-based concurrency, deep tooling ecosystem</li>
+          <li>Primary recommendation</li>
+        </ul></div>
+      </div>
+      <div class="vcard reveal">
+        <img src="diagrams/arch-retell.png" alt="Retell AI architecture" />
+        <div class="body"><h4>Retell AI <span class="fit-badge fit-alt">STRONG ALT</span></h4>
+        <ul>
+          <li>$0.055/min infra + pass-through, telephony waived with BYO-SIP</li>
+          <li>20 concurrent calls included free</li>
+          <li>Strong alternative / fallback</li>
+        </ul></div>
+      </div>
+      <div class="vcard reveal">
+        <img src="diagrams/arch-bland.png" alt="Bland.ai architecture" />
+        <div class="body"><h4>Bland.ai <span class="fit-badge fit-risk">BANGLA RISK</span></h4>
+        <ul>
+          <li>Bengali support unconfirmed in public docs</li>
+          <li>Closed speech stack — can't swap in a Bangla specialist</li>
+          <li>Workable fallback, not the pilot bet</li>
+        </ul></div>
+      </div>
+      <div class="vcard reveal">
+        <img src="diagrams/arch-bolna.png" alt="Bolna AI architecture" />
+        <div class="body"><h4>Bolna AI <span class="fit-badge fit-cost">COST OPTION</span></h4>
+        <ul>
+          <li>Native Bengali, purpose-built for Indic code-switching</li>
+          <li>India-first telephony — BD BYO-SIP needs confirmation</li>
+          <li>Attractive cost, worth a pilot slot</li>
+        </ul></div>
+      </div>
+      <div class="vcard reveal">
+        <img src="diagrams/arch-gnani.png" alt="Gnani.ai architecture" />
+        <div class="body"><h4>Gnani.ai <span class="fit-badge fit-fallback">FALLBACK</span></h4>
+        <ul>
+          <li>Native Bengali, strong BFSI enterprise track record</li>
+          <li>Enterprise / sales-led onboarding</li>
+          <li>Good fallback if Vapi/Retell underperform</li>
+        </ul></div>
+      </div>
+      <div class="vcard reveal">
+        <img src="diagrams/arch-custom.png" alt="Full custom build architecture" />
+        <div class="body"><h4>Full Custom Build <span class="fit-badge fit-phase3">PHASE 3</span></h4>
+        <ul>
+          <li>Full control, zero vendor lock-in</li>
+          <li>8–16 weeks, $35,000–$150,000+ before Zoho work</li>
+          <li>Optional, once volume justifies it</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="runbook" style="background:var(--card);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="container">
+    <div class="eyebrow-lt reveal">04 — implementation</div>
+    <h2 class="sec-title reveal">Implementation runbook — what actually gets built</h2>
+    <p class="sec-sub reveal">The concrete build steps behind the Phase 1 roadmap.</p>
+    <div class="rgrid">
+      <div class="rcard reveal"><div class="circ">1</div><h4>Zoho CRM fields &amp; stages</h4><p>Custom fields/picklists for the 11-stage model; campaign, UTM, destination, branch, enquiry-type fields</p></div>
+      <div class="rcard reveal"><div class="circ">2</div><h4>Workflow Rule + webhook</h4><p>Instant Webhook or Deluge function fires on stage-eligible update — no Zapier</p></div>
+      <div class="rcard reveal"><div class="circ">3</div><h4>Middleware: webhook receiver</h4><p>Receives Zoho's trigger and the voice platform's end-of-call webhook; maps outcome to stage</p></div>
+      <div class="rcard reveal"><div class="circ">4</div><h4>Middleware: retry scheduler</h4><p>Seven-attempt / five-day retry logic with configurable calling windows</p></div>
+      <div class="rcard reveal"><div class="circ">5</div><h4>Voice platform + BYO-SIP</h4><p>Assistant/script config in Vapi or Retell; BYO-SIP trunk connected</p></div>
+      <div class="rcard reveal"><div class="circ">6</div><h4>Speech A/B + test calls</h4><p>Azure bn-BD vs Sarvam vs Deepgram, scored by native-speaker review</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="demo">
+  <div class="container">
+    <div class="eyebrow-lt reveal">05 — see it working</div>
+    <h2 class="sec-title reveal">Interactive concept walkthrough</h2>
+    <div class="callout reveal">
+      <div>
+        <h3>Click through the 11-stage lifecycle yourself</h3>
+        <p>A repeatable, scripted demo — six sample leads across Offshore and Onshore journeys. Click "Simulate Next Call Attempt" and watch the call-flow animation, the transcript, and the exact Zoho CRM write-back payload appear, live.</p>
+        <a href="demo-site/index.html" target="_blank" class="btn btn-teal">Launch Interactive Demo →</a>
+      </div>
+      <div class="mock-frame">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div class="mock-inner">
+          <div class="mock-row"><div class="mock-pill" style="width:40%"></div></div>
+          <div class="mock-row"><div class="mock-pill" style="width:65%"></div></div>
+          <div class="mock-stage">
+            <div class="on"></div><div class="on"></div><div class="on"></div><div></div><div></div><div></div><div></div><div></div>
+          </div>
+          <div class="mock-row"><div class="mock-pill" style="width:80%"></div></div>
+          <div class="mock-row"><div class="mock-pill" style="width:55%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="techdocs" style="background:var(--card);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="container">
+    <div class="eyebrow-lt reveal">06 — for the build team</div>
+    <h2 class="sec-title reveal">Technical implementation guide</h2>
+    <div class="callout reveal">
+      <div>
+        <h3>Exact technology, not just architecture</h3>
+        <p>Middleware module breakdown, data model, retry-scheduler pseudocode, Zoho configuration tasks, security approach, and a testing plan mapped directly to the BRD's acceptance criteria (AC-01–AC-07).</p>
+        <a href="technical-implementation-guide.html" class="btn btn-teal">Open Technical Guide →</a>
+      </div>
+      <div class="mock-frame">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div class="mock-inner" style="font-family:monospace;font-size:11px;color:var(--teal-dark);line-height:1.7;">
+          on call outcome = booked:<br>
+          &nbsp;&nbsp;stage = "Appointment Booked"<br>
+          &nbsp;&nbsp;stop all further AI attempts
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="roadmap">
+  <div class="container">
+    <div class="eyebrow-lt reveal">07 — roadmap &amp; cost</div>
+    <h2 class="sec-title reveal">Phase 1 Warmer → Phase 2 Full Agent</h2>
+    <div class="rm-row reveal">
+      <div class="rm-week"><div class="wk">WEEK 1</div><h5>Discovery &amp; design</h5><p>CRM field mapping, script v1, stage rules</p></div>
+      <div class="rm-week"><div class="wk">WEEK 2</div><h5>Platform &amp; speech setup</h5><p>BYO-SIP live, Bangla A/B configured</p></div>
+      <div class="rm-week"><div class="wk">WEEK 3</div><h5>Zoho CRM configuration</h5><p>Fields, Workflow Rules, webhooks — no Zapier</p></div>
+      <div class="rm-week"><div class="wk">WEEK 4</div><h5>Middleware build</h5><p>Webhook receiver, write-back, retry scheduler</p></div>
+      <div class="rm-week"><div class="wk">WEEK 5</div><h5>QA + Bangla review</h5><p>Native-speaker review, end-to-end test calls</p></div>
+      <div class="rm-week"><div class="wk">WEEK 6</div><h5>Pilot: 200–300 leads</h5><p>Measured on PFEC's own go/no-go criteria</p></div>
+    </div>
+    <div class="cost-grid reveal">
+      <div class="cost-card">
+        <div class="lbl">One-time implementation, Phase 1 + 2</div>
+        <div class="big">$20,000 – $36,000</div>
+        <p style="font-size:12px;color:var(--muted);margin-top:8px;">8–12 weeks · ~1 solution architect + 1–2 developers</p>
+      </div>
+      <div class="cost-card">
+        <div class="lbl">Recurring running cost (voice AI usage)</div>
+        <div class="big">$250 – $4,800 / mo</div>
+        <p style="font-size:12px;color:var(--muted);margin-top:8px;">Scales from pilot volume to ~5,000 leads/month</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="next" style="background:var(--card);border-top:1px solid var(--border);">
+  <div class="container">
+    <div class="eyebrow-lt reveal">next steps</div>
+    <h2 class="sec-title reveal">Let's de-risk Bangla quality first, then build</h2>
+    <div class="steps-list reveal">
+      <div class="step-item"><div class="step-num"></div><div class="step-text">30-min discovery call — confirm Zoho CRM edition &amp; BYO-SIP details</div></div>
+      <div class="step-item"><div class="step-num"></div><div class="step-text">Approve Phase 1 scope and budget range</div></div>
+      <div class="step-item"><div class="step-num"></div><div class="step-text">Lock the Bangla + English script v1 with PFEC's counseling team</div></div>
+      <div class="step-item"><div class="step-num"></div><div class="step-text">Run the Azure vs. Sarvam vs. Deepgram Bangla A/B alongside CRM setup</div></div>
+      <div class="step-item"><div class="step-num"></div><div class="step-text">Execute the 200–300-lead pilot and review against go/no-go</div></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    PFEC Global × AI Technology Consulting Engagement — illustrative materials prepared for discussion. Not connected to a live Zoho CRM instance or voice platform.
+  </div>
+</footer>
+
+<script>
+  const bar = document.getElementById('progress');
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const pct = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+    bar.style.width = pct + '%';
+  });
+
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach((el, i) => {
+    el.style.transitionDelay = (i % 6) * 0.05 + 's';
+    io.observe(el);
+  });
+</script>
+</body>
+</html>

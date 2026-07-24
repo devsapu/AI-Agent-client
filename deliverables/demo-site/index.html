@@ -1,0 +1,852 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PFEC Global — AI Calling Solution — Concept Walkthrough</title>
+<style>
+  :root{
+    --navy:#0B2A4A;
+    --navy-deep:#081E38;
+    --teal:#1C7293;
+    --teal-light:#E7F2F6;
+    --coral:#F45B4C;
+    --coral-light:#FDEAE8;
+    --ink:#0F2233;
+    --muted:#5B7186;
+    --line:#DCE6ED;
+    --bg:#F5F8FA;
+    --card:#FFFFFF;
+    --green:#1E8E5A;
+    --green-bg:#E8F6EF;
+    --amber:#B8860B;
+    --amber-bg:#FBF3DF;
+    --red:#C13B32;
+    --red-bg:#FCEAE8;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  .disclaimer-bar{
+    background:var(--navy-deep);
+    color:#CFE3F0;
+    font-size:12.5px;
+    text-align:center;
+    padding:7px 12px;
+    letter-spacing:.2px;
+  }
+  .disclaimer-bar b{color:#fff;}
+  header.app-header{
+    background:var(--navy);
+    color:#fff;
+    padding:22px 28px 20px;
+  }
+  .app-header .title-row{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    max-width:1400px;
+    margin:0 auto;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .app-header h1{
+    font-size:22px;
+    margin:0;
+    font-weight:700;
+    letter-spacing:.2px;
+  }
+  .app-header h1 span{color:#9FD3E8;font-weight:500;}
+  .app-header p{
+    margin:4px 0 0;
+    font-size:13.5px;
+    color:#AEC7D6;
+    max-width:1400px;
+  }
+  .badge-pill{
+    background:rgba(255,255,255,.12);
+    border:1px solid rgba(255,255,255,.25);
+    padding:5px 12px;
+    border-radius:20px;
+    font-size:12px;
+    color:#EAF4F9;
+    white-space:nowrap;
+  }
+  main{
+    max-width:1400px;
+    margin:0 auto;
+    padding:22px 28px 60px;
+    display:grid;
+    grid-template-columns:290px 1fr;
+    gap:20px;
+  }
+  @media (max-width: 980px){
+    main{grid-template-columns:1fr;}
+  }
+
+  /* ---- sidebar ---- */
+  .sidebar{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px;
+    align-self:start;
+    position:sticky;
+    top:16px;
+  }
+  .sidebar h2{
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.6px;
+    color:var(--muted);
+    margin:4px 6px 10px;
+  }
+  .filter-row{
+    display:flex;
+    gap:6px;
+    margin-bottom:12px;
+    padding:0 2px;
+  }
+  .filter-btn{
+    flex:1;
+    border:1px solid var(--line);
+    background:#fff;
+    color:var(--muted);
+    font-size:12px;
+    padding:6px 4px;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:600;
+  }
+  .filter-btn.active{
+    background:var(--teal);
+    border-color:var(--teal);
+    color:#fff;
+  }
+  .lead-card{
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:10px 12px;
+    margin-bottom:8px;
+    cursor:pointer;
+    transition:border-color .15s, background .15s;
+  }
+  .lead-card:hover{border-color:var(--teal);}
+  .lead-card.selected{
+    border-color:var(--teal);
+    background:var(--teal-light);
+  }
+  .lead-card .name{
+    font-weight:700;
+    font-size:13.5px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .lead-card .meta{
+    font-size:11.5px;
+    color:var(--muted);
+    margin-top:2px;
+  }
+  .region-tag{
+    font-size:9.5px;
+    font-weight:700;
+    padding:1px 6px;
+    border-radius:10px;
+    letter-spacing:.3px;
+  }
+  .region-tag.offshore{background:#EAF1FB;color:#2C4C82;}
+  .region-tag.onshore{background:#F1EAFB;color:#5B2C82;}
+  .stage-chip{
+    display:inline-block;
+    margin-top:6px;
+    font-size:10.5px;
+    font-weight:700;
+    padding:2px 8px;
+    border-radius:20px;
+  }
+  .stage-chip.pending{background:#EEF2F5;color:var(--muted);}
+  .stage-chip.progress{background:var(--teal-light);color:var(--teal);}
+  .stage-chip.interested{background:var(--amber-bg);color:var(--amber);}
+  .stage-chip.booked{background:var(--green-bg);color:var(--green);}
+  .stage-chip.disqualified{background:var(--red-bg);color:var(--red);}
+
+  /* ---- main content ---- */
+  .content-col{display:flex;flex-direction:column;gap:18px;}
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:20px 22px;
+  }
+  .card h3{
+    margin:0 0 14px;
+    font-size:14px;
+    text-transform:uppercase;
+    letter-spacing:.5px;
+    color:var(--muted);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .lead-header{
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:14px;
+    align-items:flex-start;
+    margin-bottom:14px;
+  }
+  .lead-header .lead-name{font-size:19px;font-weight:800;margin:0;}
+  .lead-header .lead-sub{font-size:13px;color:var(--muted);margin-top:2px;}
+  .context-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+    gap:10px;
+    margin:14px 0 4px;
+  }
+  .context-field{
+    background:#FAFCFD;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:8px 10px;
+  }
+  .context-field .k{font-size:10px;text-transform:uppercase;color:var(--muted);letter-spacing:.4px;}
+  .context-field .v{font-size:13px;font-weight:700;margin-top:2px;}
+
+  /* pipeline */
+  .pipeline-wrap{margin-top:18px;}
+  .pipeline{
+    display:flex;
+    align-items:center;
+    overflow-x:auto;
+    padding:6px 2px 12px;
+  }
+  .pipe-step{
+    flex:0 0 auto;
+    text-align:center;
+    width:104px;
+  }
+  .pipe-dot{
+    width:30px;height:30px;border-radius:50%;
+    background:#EEF2F5;border:2px solid var(--line);
+    margin:0 auto 6px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:800;color:var(--muted);
+  }
+  .pipe-label{font-size:10px;color:var(--muted);line-height:1.2;}
+  .pipe-connector{
+    flex:1 1 auto;height:2px;background:var(--line);min-width:14px;
+    margin-bottom:22px;
+  }
+  .pipe-step.done .pipe-dot{background:var(--teal);border-color:var(--teal);color:#fff;}
+  .pipe-step.done .pipe-label{color:var(--ink);font-weight:600;}
+  .pipe-connector.done{background:var(--teal);}
+  .pipe-step.current .pipe-dot{background:var(--coral);border-color:var(--coral);color:#fff;box-shadow:0 0 0 4px var(--coral-light);}
+  .pipe-step.current .pipe-label{color:var(--ink);font-weight:800;}
+
+  .outcome-row{
+    display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;
+  }
+  .outcome-box{
+    flex:1;min-width:160px;
+    border:1.5px dashed var(--line);
+    border-radius:10px;
+    padding:10px 12px;
+    font-size:12.5px;
+    color:var(--muted);
+    text-align:center;
+    font-weight:700;
+  }
+  .outcome-box.hit{
+    border-style:solid;
+  }
+  .outcome-box.interested.hit{border-color:var(--amber);background:var(--amber-bg);color:var(--amber);}
+  .outcome-box.booked.hit{border-color:var(--green);background:var(--green-bg);color:var(--green);}
+  .outcome-box.disqualified.hit{border-color:var(--red);background:var(--red-bg);color:var(--red);}
+
+  .action-row{
+    margin-top:18px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    flex-wrap:wrap;
+  }
+  .btn-simulate{
+    background:var(--coral);
+    color:#fff;
+    border:none;
+    padding:11px 20px;
+    border-radius:9px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .btn-simulate:disabled{
+    background:#CBD5DC;
+    cursor:not-allowed;
+  }
+  .btn-simulate:not(:disabled):hover{background:#D94236;}
+  .action-note{font-size:12.5px;color:var(--muted);}
+
+  /* architecture flow */
+  .flow-grid{
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:10px;
+  }
+  @media (max-width:900px){.flow-grid{grid-template-columns:repeat(2,1fr);}}
+  .flow-step{
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    padding:12px 10px;
+    font-size:11.5px;
+    color:var(--muted);
+    background:#FAFCFD;
+    transition:all .25s ease;
+  }
+  .flow-step .num{
+    display:inline-flex;width:20px;height:20px;border-radius:50%;
+    background:var(--line);color:#fff;font-size:10.5px;font-weight:800;
+    align-items:center;justify-content:center;margin-bottom:6px;
+  }
+  .flow-step .lbl{font-weight:700;color:var(--ink);display:block;margin-bottom:3px;font-size:12px;}
+  .flow-step.active{
+    border-color:var(--teal);
+    background:var(--teal-light);
+    box-shadow:0 4px 14px rgba(28,114,147,.18);
+    transform:translateY(-2px);
+  }
+  .flow-step.active .num{background:var(--teal);}
+
+  .two-col{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+  }
+  @media (max-width:900px){.two-col{grid-template-columns:1fr;}}
+  .transcript-box{
+    background:var(--navy-deep);
+    color:#DCE9F0;
+    border-radius:10px;
+    padding:14px 16px;
+    font-size:13px;
+    line-height:1.55;
+    min-height:120px;
+    font-style:italic;
+  }
+  .transcript-box .who{
+    font-style:normal;
+    font-weight:700;
+    color:#8FD1EC;
+    margin-right:6px;
+  }
+  pre.json-box{
+    background:#0F1B26;
+    color:#B9E6C9;
+    border-radius:10px;
+    padding:14px 16px;
+    font-size:12px;
+    line-height:1.55;
+    overflow-x:auto;
+    min-height:120px;
+    margin:0;
+  }
+  .placeholder-note{
+    color:var(--muted);
+    font-size:13px;
+    font-style:italic;
+  }
+  .downstream-note{
+    margin-top:14px;
+    padding:10px 14px;
+    border-radius:9px;
+    font-size:13px;
+    font-weight:600;
+  }
+  .downstream-note.booked{background:var(--green-bg);color:var(--green);}
+  .downstream-note.interested{background:var(--amber-bg);color:var(--amber);}
+  .downstream-note.disqualified{background:var(--red-bg);color:var(--red);}
+  .downstream-note.retry{background:var(--teal-light);color:var(--teal);}
+
+  footer{
+    text-align:center;
+    font-size:11.5px;
+    color:var(--muted);
+    padding:20px 20px 40px;
+  }
+</style>
+</head>
+<body>
+
+<div class="disclaimer-bar"><b>Illustrative demo</b> — sample data only, not connected to a live Zoho CRM instance or voice platform</div>
+
+<header class="app-header">
+  <div class="title-row">
+    <h1>PFEC Global <span>· AI Calling Solution — Concept Walkthrough</span></h1>
+    <span class="badge-pill">Prepared by AI Technology Consulting Engagement</span>
+  </div>
+  <p>Click a lead on the left, then "Simulate Next Call Attempt" to see how the call flow, the 11-stage Zoho CRM lifecycle, and the write-back contract work together end to end.</p>
+</header>
+
+<main>
+  <aside class="sidebar">
+    <h2>Sample Leads</h2>
+    <div class="filter-row">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="Offshore">Offshore</button>
+      <button class="filter-btn" data-filter="Onshore">Onshore</button>
+    </div>
+    <div id="leadList"></div>
+  </aside>
+
+  <div class="content-col">
+    <!-- Lead detail + pipeline -->
+    <div class="card">
+      <h3>Lead &amp; Campaign Context</h3>
+      <div class="lead-header">
+        <div>
+          <p class="lead-name" id="leadName">—</p>
+          <p class="lead-sub" id="leadSub">Select a lead to begin</p>
+        </div>
+        <span class="stage-chip pending" id="leadStageChip">—</span>
+      </div>
+      <div class="context-grid" id="contextGrid"></div>
+
+      <div class="pipeline-wrap">
+        <div class="pipeline" id="pipeline"></div>
+        <div class="outcome-row">
+          <div class="outcome-box interested" id="outInterested">In Contact Interested</div>
+          <div class="outcome-box booked" id="outBooked">Appointment Booked</div>
+          <div class="outcome-box disqualified" id="outDisqualified">Disqualified</div>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button class="btn-simulate" id="simBtn" disabled>Simulate Next Call Attempt</button>
+        <span class="action-note" id="actionNote">Select a lead from the list to enable the simulation.</span>
+      </div>
+    </div>
+
+    <!-- Architecture flow -->
+    <div class="card">
+      <h3>Call Flow — Zoho CRM ⇄ Middleware ⇄ Voice Platform</h3>
+      <div class="flow-grid" id="flowGrid"></div>
+    </div>
+
+    <!-- Transcript + write-back -->
+    <div class="two-col">
+      <div class="card">
+        <h3>Simulated Call Transcript</h3>
+        <div class="transcript-box" id="transcriptBox">
+          <span class="placeholder-note">Run a simulation to see a contextual transcript snippet here.</span>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Zoho CRM Write-Back Payload</h3>
+        <pre class="json-box" id="jsonBox"><span class="placeholder-note">Run a simulation to see the write-back payload the middleware sends to Zoho CRM.</span></pre>
+      </div>
+    </div>
+    <div class="card" id="downstreamCard" style="display:none;">
+      <h3>Downstream Zoho CRM Automation</h3>
+      <div class="downstream-note" id="downstreamNote"></div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  Illustrative concept demo for discussion purposes only. Field names and payload shape follow the PFEC Global BRD (17 Apr 2026) §6–8. No live Zoho CRM, telephony, or speech vendor is connected.
+</footer>
+
+<script>
+const STAGES = [
+  {key:'not_yet', label:'Not Yet Contacted'},
+  {key:'a1', label:'1st Attempt'},
+  {key:'a2', label:'2nd Attempt'},
+  {key:'a3', label:'3rd Attempt'},
+  {key:'a4', label:'4th Attempt'},
+  {key:'a5', label:'5th Attempt'},
+  {key:'a6', label:'6th Attempt'},
+  {key:'a7', label:'7th Attempt'},
+];
+
+const FLOW_STEPS = [
+  {lbl:'Lead eligible in Zoho CRM', sub:'Stage = Not Yet Contacted'},
+  {lbl:'Native Zoho webhook fires', sub:'Workflow Rule → middleware, no Zapier'},
+  {lbl:'Middleware triggers the call', sub:'leadId + context → voice platform API'},
+  {lbl:'AI calls over BYO-SIP', sub:'Offshore/Onshore script, contextualized'},
+  {lbl:'End-of-call webhook returns', sub:'transcript, summary, outcome, recording'},
+  {lbl:'Zoho CRM stage updated', sub:'Middleware writes stage + attempt + follow-up'},
+];
+
+// Each lead has a fixed, deterministic script of outcomes for repeatable live demos.
+// outcome types: 'no_answer' | 'interested' | 'booked' | 'not_interested'
+const LEADS = [
+  {
+    id:'rima', name:'Rima Akter', region:'Offshore', country:'Bangladesh',
+    enquiryType:'Education', campaign:'UK_July_Intake', utm:'utm_source=facebook · utm_campaign=uk_july_intake',
+    destination:'United Kingdom', branch:'—', startStageIdx:0, attempts:0,
+    script:['no_answer','no_answer','interested'],
+    lineInterested:"Yes, I'm still very interested in the July UK intake — can someone call me back after 6pm?",
+    lineBooked:null, lineNotInterested:null,
+  },
+  {
+    id:'anjali', name:'Anjali Verma', region:'Offshore', country:'India',
+    enquiryType:'Education', campaign:'Canada_Sept_Intake', utm:'utm_source=google · utm_campaign=canada_sept_intake',
+    destination:'Canada', branch:'—', startStageIdx:2, attempts:2,
+    script:['no_answer','booked'],
+    lineInterested:null,
+    lineBooked:"That works well, let's lock in Thursday 4pm with a counselor to go through the Canada application.",
+    lineNotInterested:null,
+  },
+  {
+    id:'dinesh', name:'Dinesh Fernando', region:'Offshore', country:'Sri Lanka',
+    enquiryType:'Event', campaign:'SydneyExpo', utm:'utm_source=eventbrite · utm_campaign=sydney_expo',
+    destination:'Australia (Study Expo)', branch:'—', startStageIdx:8, attempts:3, presetStage:'interested',
+    script:['booked'],
+    lineInterested:null,
+    lineBooked:"Perfect, I'll come by the Sydney Expo counter Saturday at 11am as agreed.",
+    lineNotInterested:null,
+  },
+  {
+    id:'wei', name:'Wei Zhang', region:'Onshore', country:'Australia',
+    enquiryType:'Education / Course Upgrade', campaign:'AUS_CourseUpgrade_Melb', utm:'utm_source=direct · utm_campaign=aus_courseupgrade_melb',
+    destination:'Course Upgrade — Nursing', branch:'Melbourne', startStageIdx:9, attempts:2, presetStage:'booked',
+    script:[],
+    lineInterested:null, lineBooked:null, lineNotInterested:null,
+  },
+  {
+    id:'fatima', name:'Fatima Noor', region:'Onshore', country:'Australia',
+    enquiryType:'Migration / Visa', campaign:'AUS_Migration_Query', utm:'utm_source=referral · utm_campaign=aus_migration',
+    destination:'Skilled Migration Enquiry', branch:'Adelaide', startStageIdx:6, attempts:6,
+    script:['no_answer'],
+    lineInterested:null, lineBooked:null, lineNotInterested:null,
+  },
+  {
+    id:'karan', name:'Karan Patel', region:'Offshore', country:'India',
+    enquiryType:'Event', campaign:'IN_Webinar_Sept', utm:'utm_source=whatsapp · utm_campaign=in_webinar_sept',
+    destination:'Study-in-Canada Webinar', branch:'—', startStageIdx:0, attempts:0,
+    script:['no_answer','no_answer','no_answer','not_interested'],
+    lineInterested:null, lineBooked:null,
+    lineNotInterested:"No thanks, I registered for the webinar out of curiosity, I'm not planning to study abroad right now.",
+  },
+];
+
+let state = {};
+function resetState(){
+  state = {};
+  LEADS.forEach(l=>{
+    state[l.id] = {
+      stageIdx: l.startStageIdx,
+      finalStage: l.presetStage || null, // 'interested' | 'booked' | 'disqualified'
+      disqualReason: null,
+      attempts: l.attempts,
+      scriptPos: 0,
+    };
+  });
+}
+resetState();
+
+let selectedId = null;
+let currentFilter = 'all';
+
+function stageLabelFor(lead){
+  const s = state[lead.id];
+  if(s.finalStage === 'booked') return 'Appointment Booked';
+  if(s.finalStage === 'interested') return 'In Contact Interested';
+  if(s.finalStage === 'disqualified') return 'Disqualified';
+  return STAGES[s.stageIdx].label;
+}
+function stageChipClass(lead){
+  const s = state[lead.id];
+  if(s.finalStage === 'booked') return 'booked';
+  if(s.finalStage === 'interested') return 'interested';
+  if(s.finalStage === 'disqualified') return 'disqualified';
+  if(s.stageIdx === 0) return 'pending';
+  return 'progress';
+}
+
+function renderLeadList(){
+  const wrap = document.getElementById('leadList');
+  wrap.innerHTML = '';
+  LEADS.filter(l=> currentFilter==='all' || l.region===currentFilter).forEach(l=>{
+    const div = document.createElement('div');
+    div.className = 'lead-card' + (l.id===selectedId ? ' selected':'');
+    div.onclick = ()=>{ selectedId = l.id; renderAll(); };
+    div.innerHTML = `
+      <div class="name">${l.name}
+        <span class="region-tag ${l.region.toLowerCase()}">${l.region}</span>
+      </div>
+      <div class="meta">${l.country} · ${l.enquiryType}</div>
+      <div class="stage-chip ${stageChipClass(l)}">${stageLabelFor(l)}</div>
+    `;
+    wrap.appendChild(div);
+  });
+}
+
+function renderLeadDetail(){
+  const lead = LEADS.find(l=>l.id===selectedId);
+  const nameEl = document.getElementById('leadName');
+  const subEl = document.getElementById('leadSub');
+  const chipEl = document.getElementById('leadStageChip');
+  const gridEl = document.getElementById('contextGrid');
+  const simBtn = document.getElementById('simBtn');
+  const noteEl = document.getElementById('actionNote');
+
+  if(!lead){
+    nameEl.textContent = '—';
+    subEl.textContent = 'Select a lead to begin';
+    chipEl.textContent = '—';
+    chipEl.className = 'stage-chip pending';
+    gridEl.innerHTML = '';
+    simBtn.disabled = true;
+    noteEl.textContent = 'Select a lead from the list to enable the simulation.';
+    renderPipeline(null);
+    return;
+  }
+  const s = state[lead.id];
+  nameEl.textContent = lead.name;
+  subEl.textContent = `${lead.country} · ${lead.region} · ${lead.enquiryType}`;
+  chipEl.textContent = stageLabelFor(lead);
+  chipEl.className = 'stage-chip ' + stageChipClass(lead);
+
+  gridEl.innerHTML = `
+    <div class="context-field"><div class="k">Campaign</div><div class="v">${lead.campaign}</div></div>
+    <div class="context-field"><div class="k">UTM</div><div class="v" style="font-size:11px;">${lead.utm}</div></div>
+    <div class="context-field"><div class="k">Destination / Focus</div><div class="v">${lead.destination}</div></div>
+    <div class="context-field"><div class="k">Branch</div><div class="v">${lead.branch}</div></div>
+    <div class="context-field"><div class="k">Enquiry Type</div><div class="v">${lead.enquiryType}</div></div>
+    <div class="context-field"><div class="k">Attempts so far</div><div class="v">${s.attempts} / 7</div></div>
+  `;
+
+  renderPipeline(lead);
+
+  // Only Booked and Disqualified are true terminal states (BR-09).
+  // "In Contact Interested" stays active for a follow-up call (BR-05).
+  const isTerminal = s.finalStage === 'booked' || s.finalStage === 'disqualified';
+  const canSimulate = !isTerminal && s.scriptPos < lead.script.length;
+  simBtn.disabled = !canSimulate;
+  simBtn.textContent = s.finalStage === 'interested' ? 'Simulate Follow-Up Call' : 'Simulate Next Call Attempt';
+  if(s.finalStage === 'booked'){
+    noteEl.textContent = 'Appointment already booked — retries stop here (BR-09).';
+  } else if(s.finalStage === 'disqualified'){
+    noteEl.textContent = 'Disqualified — no further AI retries (BR-09).';
+  } else if(s.finalStage === 'interested' && canSimulate){
+    noteEl.textContent = 'Interested and active for follow-up — click to simulate the next call.';
+  } else if(s.finalStage === 'interested'){
+    noteEl.textContent = 'Interested and active for nurture follow-up.';
+  } else if(canSimulate){
+    noteEl.textContent = `Click to simulate attempt #${s.attempts+1}.`;
+  } else {
+    noteEl.textContent = 'Scripted demo sequence complete for this lead.';
+  }
+}
+
+function renderPipeline(lead){
+  const wrap = document.getElementById('pipeline');
+  wrap.innerHTML = '';
+  const s = lead ? state[lead.id] : null;
+  const activeIdx = s ? s.stageIdx : -1;
+
+  STAGES.forEach((st,i)=>{
+    const stepDiv = document.createElement('div');
+    let cls = 'pipe-step';
+    if(s){
+      if(i < activeIdx || (s.finalStage && i<=activeIdx)) cls += ' done';
+      if(i === activeIdx && !s.finalStage) cls += ' current';
+      if(i === activeIdx && s.finalStage) cls += ' done';
+    }
+    stepDiv.className = cls;
+    stepDiv.innerHTML = `<div class="pipe-dot">${i===0?'0':i}</div><div class="pipe-label">${st.label}</div>`;
+    wrap.appendChild(stepDiv);
+    if(i < STAGES.length-1){
+      const conn = document.createElement('div');
+      conn.className = 'pipe-connector' + (s && i < activeIdx ? ' done':'');
+      wrap.appendChild(conn);
+    }
+  });
+
+  const outI = document.getElementById('outInterested');
+  const outB = document.getElementById('outBooked');
+  const outD = document.getElementById('outDisqualified');
+  [outI,outB,outD].forEach(el=>el.classList.remove('hit'));
+  if(s){
+    if(s.finalStage==='interested') outI.classList.add('hit');
+    if(s.finalStage==='booked') outB.classList.add('hit');
+    if(s.finalStage==='disqualified'){
+      outD.classList.add('hit');
+      outD.textContent = 'Disqualified: ' + (s.disqualReason || '');
+    } else {
+      outD.textContent = 'Disqualified';
+    }
+  }
+}
+
+function renderFlow(activeIdx){
+  const grid = document.getElementById('flowGrid');
+  grid.innerHTML = '';
+  FLOW_STEPS.forEach((f,i)=>{
+    const div = document.createElement('div');
+    div.className = 'flow-step' + (i===activeIdx ? ' active':'');
+    div.innerHTML = `<span class="num">${i+1}</span><span class="lbl">${f.lbl}</span>${f.sub}`;
+    grid.appendChild(div);
+  });
+}
+renderFlow(-1);
+
+function pad(n){ return n<10 ? '0'+n : n; }
+function fakeTimestamp(offsetMin){
+  const d = new Date(Date.now() + offsetMin*60000);
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+async function runFlowAnimation(){
+  for(let i=0;i<FLOW_STEPS.length;i++){
+    renderFlow(i);
+    await new Promise(r=>setTimeout(r, 420));
+  }
+  await new Promise(r=>setTimeout(r, 200));
+  renderFlow(-1);
+}
+
+let simulationRunning = false;
+function simulate(){
+  if(simulationRunning) return; // guard against re-entrant calls regardless of trigger source
+  const lead = LEADS.find(l=>l.id===selectedId);
+  if(!lead) return;
+  const s = state[lead.id];
+  const isTerminal = s.finalStage === 'booked' || s.finalStage === 'disqualified';
+  if(isTerminal || s.scriptPos >= lead.script.length) return;
+  simulationRunning = true;
+
+  document.getElementById('simBtn').disabled = true;
+  const transcriptBox = document.getElementById('transcriptBox');
+  const jsonBox = document.getElementById('jsonBox');
+  transcriptBox.innerHTML = '<span class="placeholder-note">Simulating call…</span>';
+  jsonBox.innerHTML = '<span class="placeholder-note">Waiting for end-of-call webhook…</span>';
+  document.getElementById('downstreamCard').style.display = 'none';
+
+  runFlowAnimation().then(()=>{
+    const outcome = lead.script[s.scriptPos];
+    s.scriptPos++;
+    s.attempts++;
+
+    let stageLabel, transcriptHtml, payload, downstreamMsg, downstreamClass;
+    const attemptNum = s.attempts;
+    const nowStamp = fakeTimestamp(0);
+
+    if(outcome === 'no_answer'){
+      s.stageIdx = Math.min(s.stageIdx+1, 7);
+      stageLabel = STAGES[s.stageIdx].label;
+      transcriptHtml = '<span class="placeholder-note">No answer — call not connected. No transcript captured.</span>';
+      const nextFollowUp = fakeTimestamp(60*24); // +1 day, illustrative
+      payload = {
+        leadId: lead.id.toUpperCase()+'-001',
+        stage: stageLabel,
+        attemptNumber: attemptNum,
+        attemptDateTime: nowStamp,
+        outcome: 'not_connected',
+        nextFollowUpDateTime: nextFollowUp,
+        recordingUrl: null,
+      };
+      if(attemptNum >= 7){
+        s.finalStage = 'disqualified';
+        s.disqualReason = 'No Response After 7 Attempts';
+        payload.stage = 'Disqualified';
+        payload.disqualificationReason = s.disqualReason;
+        downstreamMsg = 'Zoho CRM closes the lead — reason "No Response After 7 Attempts" (BR-08). No further AI retries (BR-09).';
+        downstreamClass = 'disqualified';
+      } else {
+        downstreamMsg = `Zoho CRM schedules the next attempt automatically within the configured retry window (BR-04). Attempt ${attemptNum} of 7 used.`;
+        downstreamClass = 'retry';
+      }
+    } else if(outcome === 'interested'){
+      s.finalStage = 'interested';
+      stageLabel = 'In Contact Interested';
+      transcriptHtml = `<span class="who">Student:</span>"${lead.lineInterested}"`;
+      payload = {
+        leadId: lead.id.toUpperCase()+'-001',
+        stage: stageLabel,
+        attemptNumber: attemptNum,
+        attemptDateTime: nowStamp,
+        outcome: 'connected',
+        callSummary: 'Student expressed continued interest; requested a callback for booking.',
+        recordingUrl: 'https://calls.example/recordings/'+lead.id+'-'+attemptNum+'.mp3',
+      };
+      downstreamMsg = 'Zoho CRM triggers a nurture / booking-nudge workflow (BR-05). Lead stays active for follow-up.';
+      downstreamClass = 'interested';
+    } else if(outcome === 'booked'){
+      s.finalStage = 'booked';
+      stageLabel = 'Appointment Booked';
+      transcriptHtml = `<span class="who">Student:</span>"${lead.lineBooked}"`;
+      payload = {
+        leadId: lead.id.toUpperCase()+'-001',
+        stage: stageLabel,
+        attemptNumber: attemptNum,
+        attemptDateTime: nowStamp,
+        outcome: 'connected',
+        appointmentStatus: 'Booked',
+        meetingMode: lead.branch !== '—' ? 'In-person branch visit' : 'Virtual',
+        callSummary: 'Student confirmed and booked a counselor appointment during the call.',
+        recordingUrl: 'https://calls.example/recordings/'+lead.id+'-'+attemptNum+'.mp3',
+      };
+      downstreamMsg = 'Zoho CRM triggers the appointment confirmation email + WhatsApp workflow (BR-06). Retries stop (BR-09).';
+      downstreamClass = 'booked';
+    } else if(outcome === 'not_interested'){
+      s.finalStage = 'disqualified';
+      s.disqualReason = 'Not Interested';
+      stageLabel = 'Disqualified';
+      transcriptHtml = `<span class="who">Student:</span>"${lead.lineNotInterested}"`;
+      payload = {
+        leadId: lead.id.toUpperCase()+'-001',
+        stage: stageLabel,
+        attemptNumber: attemptNum,
+        attemptDateTime: nowStamp,
+        outcome: 'connected',
+        disqualificationReason: s.disqualReason,
+        callSummary: 'Student explicitly declined interest.',
+        recordingUrl: 'https://calls.example/recordings/'+lead.id+'-'+attemptNum+'.mp3',
+      };
+      downstreamMsg = 'Zoho CRM closes the lead — reason "Not Interested" (BR-07). No further AI retries (BR-09).';
+      downstreamClass = 'disqualified';
+    }
+
+    transcriptBox.innerHTML = transcriptHtml;
+    jsonBox.textContent = JSON.stringify(payload, null, 2);
+    const dCard = document.getElementById('downstreamCard');
+    const dNote = document.getElementById('downstreamNote');
+    dCard.style.display = 'block';
+    dNote.className = 'downstream-note ' + downstreamClass;
+    dNote.textContent = downstreamMsg;
+
+    renderLeadList();
+    renderLeadDetail();
+    simulationRunning = false;
+  });
+}
+
+document.getElementById('simBtn').addEventListener('click', simulate);
+document.querySelectorAll('.filter-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    renderLeadList();
+  });
+});
+
+function renderAll(){
+  renderLeadList();
+  renderLeadDetail();
+}
+
+selectedId = LEADS[0].id;
+renderAll();
+</script>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Technical Implementation Guide — PFEC AI Calling Solution</title>
+<style>
+  :root{
+    --navy:#12283C; --dark:#1A2430; --muted:#5B6B79; --border:#DCE4E9; --border2:#9AA7B0;
+    --teal:#0E7C7B; --teal-dark:#0B5C5B; --teal-light:#E4F3F2; --bg:#F7F9FB; --card:#FFFFFF;
+    --amber:#F2A65A;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--dark);font-family:Calibri,Arial,sans-serif;line-height:1.6;}
+  .wrap{max-width:920px;margin:0 auto;padding:50px 28px 100px;}
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:1.5px;color:var(--teal);text-transform:uppercase;}
+  h1{font-family:Cambria,Georgia,serif;font-size:32px;color:var(--dark);margin:8px 0 6px;}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:36px;}
+  h2{font-family:Cambria,Georgia,serif;font-size:22px;color:var(--dark);margin:48px 0 14px;padding-top:8px;border-top:1px solid var(--border);}
+  h2:first-of-type{border-top:none;}
+  p{font-size:14.5px;color:#33404A;}
+  table{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:13px;}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;}
+  th{background:var(--teal-light);color:var(--teal-dark);font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;}
+  tr:last-child td{border-bottom:none;}
+  code, pre{font-family:"SF Mono",Consolas,monospace;}
+  pre{background:var(--navy);color:#CFE3EA;padding:18px 20px;border-radius:10px;font-size:12.5px;overflow-x:auto;line-height:1.55;}
+  code{background:var(--teal-light);color:var(--teal-dark);padding:1px 6px;border-radius:4px;font-size:12.5px;}
+  ul, ol{font-size:14.5px;color:#33404A;padding-left:22px;}
+  li{margin-bottom:6px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin:16px 0;}
+  .toc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:40px;}
+  .toc .eyebrow{margin-bottom:8px;}
+  .toc ol{margin:0;padding-left:20px;font-size:13.5px;}
+  .toc a{color:var(--dark);text-decoration:none;}
+  .toc a:hover{color:var(--teal);}
+  .back{position:fixed;bottom:24px;right:24px;background:var(--teal);color:#fff;border-radius:24px;padding:10px 18px;font-size:12.5px;font-weight:700;text-decoration:none;box-shadow:0 4px 14px rgba(11,92,91,.25);}
+  strong{color:var(--dark);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Companion document</div>
+  <h1>Technical Implementation Guide</h1>
+  <div class="sub">PFEC Global — AI Calling Solution &nbsp;·&nbsp; Prepared by AI Technology Consulting Engagement &nbsp;·&nbsp; Companion to the proposal deck</div>
+
+  <div class="toc">
+    <div class="eyebrow">On this page</div>
+    <ol>
+      <li><a href="#scope">Scope of this document</a></li>
+      <li><a href="#stack">Recommended technology stack</a></li>
+      <li><a href="#middleware">Middleware — detailed design</a></li>
+      <li><a href="#zoho">Zoho CRM configuration tasks</a></li>
+      <li><a href="#voice">Voice platform setup</a></li>
+      <li><a href="#speech">Speech layer setup</a></li>
+      <li><a href="#security">Security &amp; compliance</a></li>
+      <li><a href="#deploy">Environments &amp; deployment</a></li>
+      <li><a href="#testing">Testing plan</a></li>
+      <li><a href="#deps">Open technical dependencies</a></li>
+    </ol>
+  </div>
+
+  <h2 id="scope">1. Scope of this document</h2>
+  <p>The proposal recommends a four-layer composable architecture (Zoho CRM → Custom Middleware → Voice Orchestration → Speech/LLM). This guide specifies the concrete technology choice for each layer, the middleware's internal design, the exact Zoho CRM configuration tasks, voice/speech setup, security, environments, and a testing plan mapped to the BRD's acceptance criteria (AC-01–AC-07).</p>
+  <p>Everything here is planning-level — a starting spec for the Phase 1 discovery week, not a fixed build contract.</p>
+
+  <h2 id="stack">2. Recommended technology stack</h2>
+  <table>
+    <tr><th>Layer</th><th>Technology</th><th>Why</th></tr>
+    <tr><td>CRM system of record</td><td>Zoho CRM (existing)</td><td>Owns lead intake, the 11-stage model, downstream Email/WhatsApp automation</td></tr>
+    <tr><td>Integration middleware</td><td>Node.js/TypeScript (or Python/FastAPI)</td><td>Thin, stateless-where-possible service; team's language preference decides this</td></tr>
+    <tr><td>Middleware state store</td><td>PostgreSQL + Redis</td><td>Durable relational history for reporting; lightweight queue for retry scheduling</td></tr>
+    <tr><td>Voice orchestration</td><td>Vapi (primary) or Retell AI</td><td>BYO-SIP, mid-call function-calling, configurable webhook</td></tr>
+    <tr><td>Speech (TTS/STT)</td><td>Azure AI Speech (bn-BD) primary; Sarvam AI / Deepgram Nova-3 as A/B</td><td>Bangla dialect accuracy is the highest-risk decision — validated empirically, not committed up front</td></tr>
+    <tr><td>Conversation LLM</td><td>GPT-4o / GPT-4.1-class</td><td>Multilingual reasoning, native function-calling for Phase 2 booking</td></tr>
+    <tr><td>Migration knowledge base</td><td>Small RAG store (pgvector or managed vector store)</td><td>Keeps visa/migration content PFEC-governed per FR-07</td></tr>
+    <tr><td>Telephony</td><td>PFEC's own SIP trunk, bridged via Twilio Elastic SIP if needed</td><td>Confirmed Bangladesh-destined support; local caller ID improves answer rates</td></tr>
+    <tr><td>WhatsApp (Phase 2)</td><td>Direct Meta Cloud API, or a BSP (WATI/Interakt)</td><td>Zoho CRM has no native WhatsApp channel</td></tr>
+  </table>
+
+  <h2 id="middleware">3. Middleware — detailed design</h2>
+  <p>The middleware is the one component with no off-the-shelf equivalent — it owns the Zoho CRM contract, the retry logic, and the migration knowledge base.</p>
+  <h3>3.1 Core modules</h3>
+  <table>
+    <tr><th>Module</th><th>Responsibility</th></tr>
+    <tr><td>Zoho webhook receiver</td><td>Accepts the Instant Webhook / Deluge POST when a lead becomes eligible; validates the shared secret; parses Lead ID + context</td></tr>
+    <tr><td>Script/assistant selector</td><td>Maps campaign, UTM, destination, branch, enquiry type, region to the correct script variant (BRD §5, §6)</td></tr>
+    <tr><td>Outbound call trigger</td><td>Calls the voice platform's Create Outbound Call API with <code>{phone, leadId, assistantId, contextVars}</code></td></tr>
+    <tr><td>End-of-call webhook receiver</td><td>Accepts <code>{leadId, outcome, transcript, summary, capturedFields, recordingUrl, duration}</code></td></tr>
+    <tr><td>Stage mapper</td><td>Maps outcome to the correct Lead Stage per BR-01–BR-10</td></tr>
+    <tr><td>Zoho write-back client</td><td>Updates Lead Stage, attempt number, timestamps, summary, appointment/DQ detail (BRD §7.2)</td></tr>
+    <tr><td>Retry scheduler</td><td>Tracks attempts; schedules within the 7-attempt/5-day window (BR-04); auto-disqualifies on attempt 7 (BR-08)</td></tr>
+    <tr><td>Migration knowledge base (RAG)</td><td>PFEC-approved visa content, queried via function-calling for Onshore Migration calls only (FR-07)</td></tr>
+    <tr><td>Structured logger</td><td>Emits attempt-level events for BRD §12 reporting</td></tr>
+  </table>
+
+  <h3>3.2 Data model (minimum viable schema)</h3>
+  <pre>leads
+  id, zoho_lead_id, phone, region_type, enquiry_type, campaign,
+  utm_source, utm_medium, utm_campaign, utm_content,
+  destination, branch, current_stage, attempt_count,
+  created_at, updated_at
+
+call_attempts
+  id, lead_id (fk), attempt_number, attempt_at, outcome,
+  transcript_summary, recording_url, duration_seconds,
+  next_follow_up_at
+
+disqualifications
+  lead_id (fk), reason, disqualified_at
+
+appointments
+  lead_id (fk), meeting_mode, booked_at, branch</pre>
+
+  <h3>3.3 APIs — in and out</h3>
+  <p><strong>Inbound (middleware exposes):</strong></p>
+  <ul>
+    <li><code>POST /webhooks/zoho</code> — Zoho Workflow Rule / Deluge function calls this on lead-eligible</li>
+    <li><code>POST /webhooks/voice-platform</code> — Vapi/Retell calls this at end-of-call</li>
+  </ul>
+  <p><strong>Outbound (middleware calls):</strong></p>
+  <ul>
+    <li>Voice platform "Create Outbound Call" API</li>
+    <li>Zoho CRM REST API (<code>PATCH</code> for stage/attempt/appointment write-back)</li>
+    <li>Speech/LLM APIs — only if the middleware needs the knowledge base for function-calling responses (Phase 2)</li>
+  </ul>
+
+  <h3>3.4 Retry scheduler logic (BR-01–BR-09)</h3>
+  <pre>on lead eligible:
+  stage = "Not Yet Contacted"
+  trigger first call attempt
+
+on call outcome = not_connected:
+  attempt_count += 1
+  if attempt_count >= 7:
+    stage = "Disqualified"; reason = "No Response After 7 Attempts"
+    stop scheduling further attempts
+  else:
+    stage = f"{ordinal(attempt_count)} Contact Attempted"
+    schedule next attempt within configured window, before day 5 elapses
+
+on call outcome = connected, interested, not booked:
+  stage = "In Contact Interested"
+  stop unanswered-retry counting; lead stays active for follow-up
+
+on call outcome = connected, booked:
+  stage = "Appointment Booked"
+  stop all further AI attempts (BR-09)
+
+on call outcome = connected, not interested:
+  stage = "Disqualified"; reason = "Not Interested"
+  stop all further AI attempts (BR-09)</pre>
+
+  <h2 id="zoho">4. Zoho CRM configuration tasks</h2>
+  <ol>
+    <li><strong>Custom fields / picklists</strong> — Lead Stage (11 values, exact names per BRD §8), attempt number, next follow-up date/time, call summary, recording URL, appointment status, meeting mode, disqualification reason, plus the read-side context fields (BRD §7.1).</li>
+    <li><strong>Workflow Rule</strong> — triggers on "lead becomes call-eligible."</li>
+    <li><strong>Instant Webhook or Deluge custom function</strong> — fires from the Workflow Rule, POSTs Lead ID + context to the middleware. No Zapier or other iPaaS anywhere in this path (BRD §3.2).</li>
+    <li><strong>Downstream Workflow Rules</strong> — keyed off Lead Stage changes, triggering Email/WhatsApp on <code>Appointment Booked</code> and <code>In Contact Interested</code> (BR-10).</li>
+    <li><strong>API / OAuth setup</strong> — scoped client for reading lead fields and updating stage/attempt fields; confirm Zoho CRM edition supports Workflow Rules + custom functions + the API call volume the retry model implies (NFR-01).</li>
+  </ol>
+
+  <h2 id="voice">5. Voice platform setup (Vapi / Retell)</h2>
+  <ol>
+    <li>Create platform account; confirm BYO-SIP trunk connection (PFEC supplies SIP credentials for a local caller ID).</li>
+    <li>Build the assistant(s): one script tree per Offshore/Onshore × Education/Migration combination.</li>
+    <li>Configure the end-of-call webhook URL and the shared secret/token (NFR-01/NFR-02).</li>
+    <li>Configure custom metadata pass-through so <code>leadId</code> round-trips unchanged.</li>
+    <li><em>Phase 2 only:</em> wire mid-call function-calling to the middleware's booking/availability endpoints.</li>
+  </ol>
+
+  <h2 id="speech">6. Speech layer setup</h2>
+  <ol>
+    <li>Provision Azure AI Speech (bn-BD neural) as the primary TTS candidate; Sarvam AI and Deepgram Nova-3 as A/B candidates for STT.</li>
+    <li>Build a small A/B test harness: same script, three speech configurations, reviewed by a native Bangladeshi Bangla speaker.</li>
+    <li>Score against PFEC's own Bangla-quality bar before locking in — this is the pilot's go/no-go gate.</li>
+  </ol>
+
+  <h2 id="security">7. Security &amp; compliance</h2>
+  <table>
+    <tr><th>Concern</th><th>Approach</th></tr>
+    <tr><td>Zoho → middleware auth</td><td>Shared secret / signed payload on the Zoho webhook call</td></tr>
+    <tr><td>Voice platform → middleware auth</td><td>Webhook URL key + secret token (NFR-01)</td></tr>
+    <tr><td>Middleware → Zoho auth</td><td>OAuth client credentials, scoped to lead read/update only</td></tr>
+    <tr><td>Middleware → voice platform auth</td><td>Platform API key in a secrets manager, never in source</td></tr>
+    <tr><td>Recording / transcript PII</td><td>Encrypt at rest; confirm data residency; define retention policy in the SOW</td></tr>
+    <tr><td>Migration knowledge base content</td><td>PFEC-approved only, versioned, reviewed before Phase 2 go-live (FR-07)</td></tr>
+  </table>
+
+  <h2 id="deploy">8. Environments &amp; deployment</h2>
+  <ul>
+    <li><strong>Environments:</strong> dev → staging → production, with credentials scoped separately per environment.</li>
+    <li><strong>Hosting:</strong> a small cloud VM or serverless container is sufficient at pilot volume (~$50–150/month).</li>
+    <li><strong>CI/CD:</strong> standard build → test → deploy; a single-environment promotion flow is sufficient for Phase 1.</li>
+    <li><strong>Monitoring/logging:</strong> per-attempt structured logs double as the operational signal; alert on webhook failures and scheduler lag.</li>
+  </ul>
+
+  <h2 id="testing">9. Testing plan (mapped to BRD acceptance criteria)</h2>
+  <table>
+    <tr><th>Test</th><th>Validates</th></tr>
+    <tr><td>Unit tests on stage-mapper and retry-scheduler logic</td><td>BR-01–BR-09, independent of any live integration</td></tr>
+    <tr><td>Integration test: mock Zoho webhook → middleware → mock voice platform</td><td>AC-01</td></tr>
+    <tr><td>Integration test: contextual field pass-through</td><td>AC-02</td></tr>
+    <tr><td>Scripted attempt-sequence test</td><td>AC-03</td></tr>
+    <tr><td>End-to-end test call — interested but unbooked</td><td>AC-04</td></tr>
+    <tr><td>End-to-end test call — booked</td><td>AC-05</td></tr>
+    <tr><td>End-to-end test call — disqualified (both reasons)</td><td>AC-06</td></tr>
+    <tr><td>Downstream Zoho automation check</td><td>AC-07</td></tr>
+    <tr><td>Native-speaker review of recorded test calls</td><td>Pilot's Bangla-quality go/no-go gate</td></tr>
+  </table>
+  <div class="card">The interactive demo mockup (<code>../demo-site/index.html</code>) exercises this exact stage-mapping and write-back logic against sample leads, and can be used directly in the client meeting to walk through each test scenario above without needing a live call.</div>
+
+  <h2 id="deps">10. Open technical dependencies</h2>
+  <p>These need a PFEC answer before implementation can start in earnest:</p>
+  <ul>
+    <li>Current Zoho CRM edition and API rate limits (Week 1 discovery item)</li>
+    <li>Final CRM field mapping and campaign naming conventions</li>
+    <li>BYO-SIP trunk provider and credentials</li>
+    <li>Migration/visa knowledge base content, approved and versioned by PFEC before Phase 2</li>
+    <li>WhatsApp channel decision (direct Meta Cloud API vs. a BSP) — needed before Phase 2, not Phase 1</li>
+  </ul>
+</div>
+<a href="index.html" class="back">← Back to overview</a>
+</body>
+</html>
