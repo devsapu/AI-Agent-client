@@ -68,7 +68,7 @@
   <table>
     <tr><th>Layer</th><th>Technology</th><th>Why</th></tr>
     <tr><td>CRM system of record</td><td>Zoho CRM (existing)</td><td>Owns lead intake, the 11-stage model, downstream Email/WhatsApp automation</td></tr>
-    <tr><td>Integration middleware</td><td>Node.js/TypeScript (or Python/FastAPI)</td><td>Thin, stateless-where-possible service; team's language preference decides this</td></tr>
+    <tr><td>Integration middleware</td><td>ASP.NET Core (C#)</td><td>Matches the team's existing .NET expertise; Azure App Service hosting pairs naturally with the Azure AI Speech / Azure OpenAI layers below</td></tr>
     <tr><td>Middleware state store</td><td>PostgreSQL + Redis</td><td>Durable relational history for reporting; lightweight queue for retry scheduling</td></tr>
     <tr><td>Voice orchestration</td><td>Vapi (primary) or Retell AI</td><td>BYO-SIP, mid-call function-calling, configurable webhook</td></tr>
     <tr><td>Speech (TTS/STT)</td><td>Azure AI Speech (bn-BD) primary; Sarvam AI / Deepgram Nova-3 as A/B</td><td>Bangla dialect accuracy is the highest-risk decision — validated empirically, not committed up front</td></tr>

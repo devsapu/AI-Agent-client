@@ -25,7 +25,7 @@ Everything here is planning-level — a starting spec for the Phase 1 discovery 
 | Layer | Technology | Why |
 |---|---|---|
 | CRM system of record | Zoho CRM (existing) | Already in place; owns lead intake, the 11-stage model, and downstream Email/WhatsApp automation |
-| Integration middleware | Node.js/TypeScript (or Python/FastAPI) on a small cloud VM or serverless container | Thin, stateless-where-possible service; team's existing language preference decides this — no strong technical reason to prefer one over the other here |
+| Integration middleware | ASP.NET Core (C#) on a small cloud VM or Azure App Service | Thin, stateless-where-possible service; matches the team's existing .NET expertise, and Azure App Service pairs naturally with Azure AI Speech / Azure OpenAI already recommended for the speech and LLM layers |
 | Middleware state store | PostgreSQL (attempt history, retry schedule) + Redis (short-lived job queue for retry scheduling) | Attempt/stage history needs durable relational storage for reporting (BRD §12); retry scheduling benefits from a lightweight queue rather than cron-polling a database table |
 | Voice orchestration | Vapi (primary) or Retell AI | BYO-SIP, mid-call function-calling, configurable webhook — see proposal §4.1 for the comparison |
 | Speech (TTS/STT) | Azure AI Speech (bn-BD neural) primary, Sarvam AI / Deepgram Nova-3 as A/B candidates | Bangla dialect accuracy is the single highest-risk decision — validated empirically in Phase 1 Week 5, not committed up front |
